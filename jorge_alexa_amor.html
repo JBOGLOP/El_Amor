@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jorge & Alexa — Una historia en mensajes 💌</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --rose: #d4537e;
+  --rose-light: #f5c4d1;
+  --rose-dark: #993556;
+  --rose-bg: #fdf0f5;
+  --cream: #faf8f5;
+  --ink: #1a1410;
+  --ink-muted: #6b5c52;
+  --ink-faint: #c4b8b0;
+  --gold: #c9922a;
+  --teal: #1d9e75;
+  --radius: 16px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* ── CURSOR ── */
+body { cursor: none; }
+#cursor {
+  position: fixed; top: 0; left: 0; width: 20px; height: 20px;
+  background: var(--rose); border-radius: 50%; pointer-events: none;
+  z-index: 9999; transform: translate(-50%, -50%);
+  transition: transform 0.1s, opacity 0.2s, width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: multiply;
+}
+#cursor.big { width: 48px; height: 48px; opacity: 0.35; }
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  background: var(--ink);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; overflow: hidden; text-align: center;
+  padding: 2rem;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 40%, #3d1826 0%, #1a1410 60%, #0d0a08 100%);
+}
+.floating-hearts {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+.fheart {
+  position: absolute;
+  font-size: 1.2rem;
+  opacity: 0;
+  animation: floatUp linear infinite;
+  color: var(--rose-light);
+  user-select: none;
+}
+@keyframes floatUp {
+  0% { transform: translateY(110vh) rotate(0deg) scale(0.5); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.2; }
+  100% { transform: translateY(-20vh) rotate(720deg) scale(1.2); opacity: 0; }
+}
+.hero-eyebrow {
+  position: relative; z-index: 2;
+  font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--rose-light); font-weight: 500;
+  margin-bottom: 1.5rem;
+  opacity: 0; animation: fadeSlideUp 1s 0.3s ease forwards;
+}
+.hero-title {
+  position: relative; z-index: 2;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3.5rem, 12vw, 8rem);
+  font-weight: 900; line-height: 0.9;
+  color: #fff;
+  opacity: 0; animation: fadeSlideUp 1s 0.5s ease forwards;
+}
+.hero-title em {
+  font-style: italic; color: var(--rose);
+  display: block;
+}
+.hero-sub {
+  position: relative; z-index: 2;
+  font-size: clamp(1rem, 3vw, 1.3rem);
+  color: rgba(255,255,255,0.5);
+  font-weight: 300;
+  margin-top: 1.5rem;
+  max-width: 520px;
+  opacity: 0; animation: fadeSlideUp 1s 0.7s ease forwards;
+}
+.hero-pill {
+  position: relative; z-index: 2;
+  margin-top: 2rem;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(212,83,126,0.2);
+  border: 1px solid rgba(212,83,126,0.4);
+  border-radius: 50px;
+  padding: 10px 24px;
+  color: var(--rose-light); font-size: 13px; font-weight: 500;
+  opacity: 0; animation: fadeSlideUp 1s 0.9s ease forwards;
+}
+.scroll-hint {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  opacity: 0; animation: fadeSlideUp 1s 1.3s ease forwards;
+  color: rgba(255,255,255,0.3); font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+}
+.scroll-arrow {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, transparent, rgba(212,83,126,0.6));
+  animation: scrollPulse 1.5s ease-in-out infinite;
+}
+@keyframes scrollPulse { 0%,100%{opacity:0.3;transform:scaleY(0.7)} 50%{opacity:1;transform:scaleY(1)} }
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── BIG NUMBERS SECTION ── */
+.section {
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 5vw, 4rem);
+}
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-label {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--ink-faint); font-weight: 500; margin-bottom: 3rem;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--ink-faint); opacity: 0.3; }
+
+.mega-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--ink-faint);
+  border: 1px solid var(--ink-faint);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.mega-stat {
+  background: var(--cream);
+  padding: 2.5rem 2rem;
+  position: relative; overflow: hidden;
+  transition: background 0.3s;
+}
+.mega-stat:hover { background: var(--rose-bg); }
+.mega-stat .big-num {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 5vw, 3.8rem);
+  font-weight: 900;
+  color: var(--rose);
+  line-height: 1;
+  counter-reset: num;
+}
+.mega-stat .label {
+  font-size: 13px; color: var(--ink-muted); margin-top: 8px; line-height: 1.4;
+}
+.mega-stat .accent {
+  position: absolute; right: 1.5rem; top: 1.5rem;
+  font-size: 2rem; opacity: 0.12;
+}
+.counter { display: inline-block; }
+
+/* ── TIMELINE ── */
+#timeline-section { background: var(--ink); color: #fff; }
+#timeline-section .section-label { color: rgba(255,255,255,0.3); }
+#timeline-section .section-label::after { background: rgba(255,255,255,0.15); }
+
+.timeline { position: relative; padding-left: 2rem; }
+.timeline::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--rose-dark), var(--rose), var(--rose-dark));
+}
+.tl-entry {
+  position: relative; padding: 0 0 3.5rem 2.5rem;
+  opacity: 0; transform: translateX(-20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.tl-entry.visible { opacity: 1; transform: translateX(0); }
+.tl-dot {
+  position: absolute; left: -2rem; top: 5px;
+  width: 14px; height: 14px;
+  background: var(--rose);
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  transform: translateX(-6px);
+}
+.tl-dot.big { width: 20px; height: 20px; background: var(--gold); box-shadow: 0 0 20px rgba(201,146,42,0.6); transform: translateX(-9px); }
+.tl-date { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--rose); font-weight: 500; margin-bottom: 6px; }
+.tl-head { font-family: 'Playfair Display', serif; font-size: clamp(1.3rem, 3vw, 1.8rem); font-weight: 700; color: #fff; margin-bottom: 8px; }
+.tl-body { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.7; max-width: 560px; }
+.tl-body em { color: var(--rose-light); font-style: italic; }
+.tl-badge {
+  display: inline-block; margin-top: 10px;
+  background: rgba(212,83,126,0.15); border: 1px solid rgba(212,83,126,0.3);
+  border-radius: 20px; padding: 4px 14px;
+  font-size: 12px; color: var(--rose-light); font-weight: 500;
+}
+
+/* ── CHART ── */
+#chart-section { background: var(--rose-bg); }
+.chart-container { position: relative; width: 100%; height: clamp(250px, 40vw, 380px); }
+
+/* ── VS SECTION ── */
+.versus {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: start;
+}
+.vs-person { padding: 2rem; }
+.vs-person.right { text-align: right; }
+.vs-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; font-weight: 900;
+  margin-bottom: 1.5rem;
+}
+.vs-name.pink { color: var(--rose); }
+.vs-name.blue { color: #378add; }
+.vs-row { padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.vs-row .vs-val { font-size: 1.6rem; font-weight: 700; font-family: 'Playfair Display', serif; color: var(--ink); }
+.vs-row .vs-lbl { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+.vs-divider {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 2rem 1rem; gap: 2rem;
+}
+.vs-divider-line { width: 1px; flex: 1; background: var(--ink-faint); opacity: 0.3; }
+.vs-vs {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem; font-weight: 900;
+  color: var(--ink-faint);
+  writing-mode: vertical-rl;
+  letter-spacing: 4px;
+}
+
+/* ── NICKNAMES ── */
+#nicknames { background: var(--ink); }
+#nicknames .section-label { color: rgba(255,255,255,0.3); }
+#nicknames .section-label::after { background: rgba(255,255,255,0.15); }
+.nick-cloud {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center;
+  padding: 2rem 0;
+}
+.nick-pill {
+  background: rgba(212,83,126,0.1); border: 1px solid rgba(212,83,126,0.25);
+  border-radius: 50px; padding: 10px 22px;
+  color: #fff; cursor: default;
+  transition: all 0.3s;
+  display: flex; align-items: center; gap: 8px;
+}
+.nick-pill:hover {
+  background: rgba(212,83,126,0.3);
+  border-color: var(--rose);
+  transform: scale(1.08);
+}
+.nick-pill .nick-word { font-family: 'Playfair Display', serif; font-style: italic; }
+.nick-pill .nick-count { font-size: 12px; color: var(--rose-light); font-weight: 500; }
+
+/* ── FUN FACTS ── */
+.facts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+.fact-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 2rem;
+  border: 1px solid rgba(0,0,0,0.06);
+  transition: transform 0.3s, box-shadow 0.3s;
+  position: relative; overflow: hidden;
+}
+.fact-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--rose);
+}
+.fact-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+.fact-icon { font-size: 2rem; margin-bottom: 1rem; }
+.fact-num { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 900; color: var(--rose); line-height: 1; margin-bottom: 6px; }
+.fact-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+.fact-desc { font-size: 13px; color: var(--ink-muted); line-height: 1.6; }
+
+/* ── HOURS BAR ── */
+.hour-bars { display: flex; flex-direction: column; gap: 10px; }
+.h-row { display: flex; align-items: center; gap: 14px; }
+.h-label { width: 70px; font-size: 13px; color: var(--ink-muted); text-align: right; flex-shrink: 0; }
+.h-track { flex: 1; height: 28px; background: rgba(0,0,0,0.05); border-radius: 6px; overflow: hidden; }
+.h-fill {
+  height: 100%;
+  background: var(--rose);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 10px;
+  font-size: 12px; font-weight: 500; color: #fff;
+  width: 0;
+  transition: width 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.h-fill.peak { background: var(--rose-dark); }
+
+/* ── QUOTE ── */
+.quote-section {
+  background: var(--rose);
+  padding: clamp(4rem, 10vw, 8rem) clamp(1.5rem, 5vw, 4rem);
+  text-align: center;
+}
+.quote-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 5vw, 3rem);
+  font-style: italic;
+  color: #fff;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.4;
+}
+.quote-author {
+  margin-top: 1.5rem;
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* ── FOOTER ── */
+footer {
+  background: var(--ink);
+  padding: 4rem 2rem;
+  text-align: center;
+}
+footer h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 6vw, 4rem);
+  color: #fff;
+  font-style: italic;
+}
+footer h2 span { color: var(--rose); }
+footer p { color: rgba(255,255,255,0.35); font-size: 13px; margin-top: 1.5rem; line-height: 1.8; }
+footer .made-with { margin-top: 3rem; font-size: 12px; color: rgba(255,255,255,0.2); letter-spacing: 1px; }
+
+/* ── REVEAL ANIMATIONS ── */
+.reveal {
+  opacity: 0; transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 1rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  background: transparent;
+  transition: background 0.4s, backdrop-filter 0.4s;
+}
+nav.scrolled {
+  background: rgba(26,20,16,0.85);
+  backdrop-filter: blur(12px);
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; color: #fff; font-style: italic;
+}
+.nav-logo span { color: var(--rose); }
+.nav-links { display: flex; gap: 1.5rem; }
+.nav-links a {
+  color: rgba(255,255,255,0.5); font-size: 13px; text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--rose-light); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .versus { grid-template-columns: 1fr; }
+  .vs-divider { flex-direction: row; height: 2px; padding: 0 1rem; }
+  .vs-divider-line { width: auto; flex: 1; height: 1px; }
+  .vs-vs { writing-mode: horizontal-tb; }
+  nav .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<nav id="navbar">
+  <div class="nav-logo">J <span>&</span> A</div>
+  <div class="nav-links">
+    <a href="#timeline-section">Historia</a>
+    <a href="#chart-section">Datos</a>
+    <a href="#vs-section">El duelo</a>
+    <a href="#facts-section">Fun facts</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="floating-hearts" id="hearts"></div>
+  <p class="hero-eyebrow">19 mayo 2023 → 28 mayo 2026 · 22.488 mensajes</p>
+  <h1 class="hero-title">Jorge<em>& Alexa</em></h1>
+  <p class="hero-sub">Una historia de amor contada en mensajes, apodos y "jajaja" — directamente desde WhatsApp.</p>
+  <div class="hero-pill">💌 3 años · 1.050 días chateando · 95% de cobertura diaria</div>
+  <div class="scroll-hint">
+    <span>scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- BIG NUMBERS -->
+<section class="section">
+  <div class="section-inner">
+    <p class="section-label reveal">El gran cuadro</p>
+    <div class="mega-stats reveal">
+      <div class="mega-stat">
+        <span class="accent">💬</span>
+        <div class="big-num"><span class="counter" data-target="22488">0</span></div>
+        <div class="label">mensajes totales enviados<br>en 3 años</div>
+      </div>
+      <div class="mega-stat">
+        <span class="accent">📅</span>
+        <div class="big-num"><span class="counter" data-target="1050">0</span></div>
+        <div class="label">días únicos con<br>al menos un mensaje</div>
+      </div>
+      <div class="mega-stat">
+        <span class="accent">📸</span>
+        <div class="big-num"><span class="counter" data-target="6091">0</span></div>
+        <div class="label">fotos, videos y<br>audios compartidos</div>
+      </div>
+      <div class="mega-stat">
+        <span class="accent">❤️</span>
+        <div class="big-num"><span class="counter" data-target="489">0</span></div>
+        <div class="label">veces que se escribieron<br>"te amo"</div>
+      </div>
+      <div class="mega-stat">
+        <span class="accent">😂</span>
+        <div class="big-num"><span class="counter" data-target="382">0</span></div>
+        <div class="label">veces que alguien<br>escribió "jajaja"</div>
+      </div>
+      <div class="mega-stat">
+        <span class="accent">🐾</span>
+        <div class="big-num"><span class="counter" data-target="821">0</span></div>
+        <div class="label">veces que Jorge<br>llamó "osa" a Alexa</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section class="section" id="timeline-section">
+  <div class="section-inner">
+    <p class="section-label">La línea del tiempo</p>
+    <div class="timeline">
+
+      <div class="tl-entry">
+        <div class="tl-dot big"></div>
+        <div class="tl-date">19 Mayo 2023 · Día 1</div>
+        <h3 class="tl-head">El primer mensaje: "Mor"</h3>
+        <p class="tl-body">Alexa escribió una sola palabra. Sin signos. Sin contexto. Solo <em>"Mor"</em>. Y así empezó todo. Ese día se creó el chat que hoy tiene 28.641 líneas de historia.</p>
+      </div>
+
+      <div class="tl-entry">
+        <div class="tl-dot"></div>
+        <div class="tl-date">28 Mayo 2023 · 9 días después</div>
+        <h3 class="tl-head">El primer "Te amo"</h3>
+        <p class="tl-body">Alexa volvió a ser la primera. Simple, en minúscula, irresistible: <em>"Te amo"</em>. Desde ese día, la frase aparecería 489 veces más en el chat.</p>
+        <span class="tl-badge">💗 Alexa fue primera</span>
+      </div>
+
+      <div class="tl-entry">
+        <div class="tl-dot"></div>
+        <div class="tl-date">Junio 2023 · 779 mensajes</div>
+        <h3 class="tl-head">El mes del enamoramiento</h3>
+        <p class="tl-body">El mes más activo del primer año. La luna de miel en pantalla: hablaban de medicamentos, de lentejas, de lluvias, de todo. El amor tiene conversaciones muy prácticas.</p>
+      </div>
+
+      <div class="tl-entry">
+        <div class="tl-dot"></div>
+        <div class="tl-date">2023-2024 · La consolidación</div>
+        <h3 class="tl-head">Entre Bogotá e Iza</h3>
+        <p class="tl-body">Dos ciudades, una relación. Iza aparece mencionada <em>94 veces</em> en el chat. El apartamento compartido, las escapadas de fin de semana, el perro. Una vida construida mensaje a mensaje.</p>
+      </div>
+
+      <div class="tl-entry">
+        <div class="tl-dot big"></div>
+        <div class="tl-date">Agosto 2025 · El récord histórico</div>
+        <h3 class="tl-head">1.120 mensajes en un solo mes</h3>
+        <p class="tl-body">El mes más parlanchín de toda la historia. Tres años después del inicio y la relación habla más que nunca. Eso no es costumbre — es amor que <em>crece</em>.</p>
+        <span class="tl-badge">🏆 Récord absoluto</span>
+      </div>
+
+      <div class="tl-entry">
+        <div class="tl-dot"></div>
+        <div class="tl-date">Mayo 2026 · Hoy</div>
+        <h3 class="tl-head">Siguen. Igual de intensos.</h3>
+        <p class="tl-body">El chat no para. Esta mañana Jorge escribió <em>"cachorraaaaa!!!"</em>. Anoche coordinaron quién recoge a quién. Y en algún punto de esta semana, alguien dijo "osa" por octocientasmilésima vez.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CHART -->
+<section class="section" id="chart-section">
+  <div class="section-inner">
+    <p class="section-label reveal">Actividad mensual — el pulso de la relación</p>
+    <div class="reveal">
+      <div class="chart-container">
+        <canvas id="actChart" role="img" aria-label="Mensajes por mes de mayo 2023 a mayo 2026">Gráfica de mensajes mensuales mostrando crecimiento con pico en agosto 2025.</canvas>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--ink-muted);margin-top:1rem;text-align:center" class="reveal">
+      El pico de agosto 2025 (1.120 mensajes) está marcado en rojo oscuro. La tendencia general es al alza.
+    </p>
+  </div>
+</section>
+
+<!-- HOURS -->
+<section class="section" style="background:#fff">
+  <div class="section-inner">
+    <p class="section-label reveal">La hora del amor — ¿cuándo hablan más?</p>
+    <div class="hour-bars reveal" id="hourBars">
+      <div class="h-row"><div class="h-label">9 a.m.</div><div class="h-track"><div class="h-fill" data-w="95">1.866</div></div></div>
+      <div class="h-row"><div class="h-label">10 a.m.</div><div class="h-track"><div class="h-fill" data-w="99">1.870</div></div></div>
+      <div class="h-row"><div class="h-label">11 a.m.</div><div class="h-track"><div class="h-fill peak" data-w="100">1.969 ★</div></div></div>
+      <div class="h-row"><div class="h-label">12 p.m.</div><div class="h-track"><div class="h-fill" data-w="83">1.631</div></div></div>
+      <div class="h-row"><div class="h-label">3 p.m.</div><div class="h-track"><div class="h-fill" data-w="85">1.669</div></div></div>
+      <div class="h-row"><div class="h-label">6 p.m.</div><div class="h-track"><div class="h-fill" data-w="68">1.340</div></div></div>
+      <div class="h-row"><div class="h-label">8 p.m.</div><div class="h-track"><div class="h-fill" data-w="55">1.080</div></div></div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-muted);margin-top:1.5rem" class="reveal">
+      Las 11 a.m. dominan el universo de esta pareja. Probablemente el momento del café mental donde la primera pregunta es "¿cómo vas?" y la segunda es "¿qué almorzamos?"
+    </p>
+  </div>
+</section>
+
+<!-- VERSUS -->
+<section class="section" id="vs-section" style="background:var(--cream)">
+  <div class="section-inner">
+    <p class="section-label reveal">El duelo de mensajes</p>
+    <div class="versus reveal">
+      <div class="vs-person">
+        <div class="vs-name pink">Jorge</div>
+        <div class="vs-row">
+          <div class="vs-val">13.023</div>
+          <div class="vs-lbl">mensajes enviados</div>
+        </div>
+        <div class="vs-row">
+          <div class="vs-val">9.132</div>
+          <div class="vs-lbl">emojis enviados</div>
+        </div>
+        <div class="vs-row">
+          <div class="vs-val">631</div>
+          <div class="vs-lbl">días que inició la conversación</div>
+        </div>
+        <div class="vs-row">
+          <div class="vs-val">220</div>
+          <div class="vs-lbl">veces que escribió "jajaja"</div>
+        </div>
+        <div class="vs-row">
+          <div class="vs-val">21,3</div>
+          <div class="vs-lbl">caracteres promedio por mensaje</div>
+        </div>
+      </div>
+
+      <div class="vs-divider">
+        <div class="vs-divider-line"></div>
+        <div class="vs-vs">VS</div>
+        <div class="vs-divider-line"></div>
+      </div>
+
+      <div class="vs-person right">
+        <div class="vs-name blue">Alexa</div>
+        <div class="vs-row">
+          <div class="vs-val">9.465</div>
+          <div class="vs-lbl">mensajes enviados</div>
+        </div>
+        <div class="vs-row">
+          <div class="vs-val">4.830</div>
+          <div class="vs-lbl">emojis enviados</div>
+        </div>
+        <div class="vs-row">
+          <div class="vs-val">419</div>
+          <div class="vs-lbl">días que inició la conversación</div>
+        </div>
+        <div class="vs-row">
+          <div class="vs-val">162</div>
+          <div class="vs-lbl">veces que escribió "jajaja"</div>
+        </div>
+        <div class="vs-row">
+          <div class="vs-val">22,9</div>
+          <div class="vs-lbl">caracteres promedio por mensaje</div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-muted);margin-top:1.5rem;text-align:center" class="reveal">
+      Jorge escribe más y más seguido. Alexa escribe mensajes ligeramente más largos. El balance imperfecto y perfecto a la vez.
+    </p>
+  </div>
+</section>
+
+<!-- NICKNAMES -->
+<section class="section" id="nicknames">
+  <div class="section-inner" style="text-align:center">
+    <p class="section-label reveal" style="justify-content:center">Los apodos de Jorge para Alexa</p>
+    <div class="nick-cloud reveal">
+      <div class="nick-pill" style="font-size:1.6rem"><span class="nick-word">osa</span><span class="nick-count">821×</span></div>
+      <div class="nick-pill" style="font-size:1.3rem"><span class="nick-word">amor</span><span class="nick-count">461×</span></div>
+      <div class="nick-pill" style="font-size:1.15rem"><span class="nick-word">perri</span><span class="nick-count">175×</span></div>
+      <div class="nick-pill"><span class="nick-word">cachorra</span><span class="nick-count">90×</span></div>
+      <div class="nick-pill"><span class="nick-word">osita</span><span class="nick-count">90×</span></div>
+      <div class="nick-pill" style="font-size:0.9rem"><span class="nick-word">vida</span><span class="nick-count">40×</span></div>
+      <div class="nick-pill" style="font-size:0.85rem"><span class="nick-word">cachorris</span><span class="nick-count">9×</span></div>
+      <div class="nick-pill" style="font-size:0.75rem;opacity:0.7"><span class="nick-word">osaporosa</span><span class="nick-count">1×</span></div>
+    </div>
+    <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:1.5rem" class="reveal">
+      "Osaporosa" — la rareza preciosa. Apareció una vez y nunca más. Como esas palabras que inventa el amor y luego olvidar tiene el costo de no haberla dicho suficiente.
+    </p>
+  </div>
+</section>
+
+<!-- FUN FACTS -->
+<section class="section" id="facts-section">
+  <div class="section-inner">
+    <p class="section-label reveal">Fun facts que el algoritmo encontró</p>
+    <div class="facts-grid">
+      <div class="fact-card reveal">
+        <div class="fact-icon">📅</div>
+        <div class="fact-num">95%</div>
+        <div class="fact-title">Presencia diaria</div>
+        <div class="fact-desc">Solo 55 días en 3 años no hubo ni un mensaje. Casi no existe el silencio entre ellos. Eso es constancia, no obsesión.</div>
+      </div>
+      <div class="fact-card reveal">
+        <div class="fact-icon">💌</div>
+        <div class="fact-num">9 días</div>
+        <div class="fact-title">Del "Mor" al "Te amo"</div>
+        <div class="fact-desc">Alexa tardó exactamente 9 días en escribir "te amo". Y fue la primera. Eso dice mucho sobre quién tiene el corazón más abierto en esta pareja.</div>
+      </div>
+      <div class="fact-card reveal">
+        <div class="fact-icon">📸</div>
+        <div class="fact-num">27%</div>
+        <div class="fact-title">Mensajes multimedia</div>
+        <div class="fact-desc">1 de cada 4 mensajes es una foto, video o audio. Esta pareja no solo habla — se muestra el mundo constantemente.</div>
+      </div>
+      <div class="fact-card reveal">
+        <div class="fact-icon">📈</div>
+        <div class="fact-num">+42%</div>
+        <div class="fact-title">Amor que crece</div>
+        <div class="fact-desc">2025 tuvo 42% más mensajes que 2023. La relación no se enfría con el tiempo — se intensifica. Raro y hermoso.</div>
+      </div>
+      <div class="fact-card reveal">
+        <div class="fact-icon">🗓️</div>
+        <div class="fact-num">Martes</div>
+        <div class="fact-title">El día más parlanchín</div>
+        <div class="fact-desc">4.227 mensajes los martes vs 2.062 los sábados. ¿Los sábados están juntos y no necesitan el teléfono? Eso esperamos.</div>
+      </div>
+      <div class="fact-card reveal">
+        <div class="fact-icon">🎤</div>
+        <div class="fact-num">77</div>
+        <div class="fact-title">Notas de voz</div>
+        <div class="fact-desc">Cuando el texto no alcanza para lo que quieren decir, llega el audio. Probablemente los mensajes más tiernos — y los únicos que no podemos analizar aquí.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-section">
+  <p class="quote-text">"Osaporosa"</p>
+  <p class="quote-author">La palabra más rara y tierna del chat · aparece exactamente 1 vez · Jorge dixit</p>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <h2>Jorge <span>&</span> Alexa</h2>
+  <p>
+    22.488 mensajes · 1.050 días · 95% de presencia<br>
+    821 "osa" · 489 "te amo" · 382 "jajaja"<br>
+    1 "osaporosa" que vale más que todos los demás
+  </p>
+  <p class="made-with">Análisis generado con amor (y Python) · Mayo 2026</p>
+</footer>
+
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+});
+document.querySelectorAll('a, button, .nick-pill, .fact-card, .mega-stat').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+});
+
+// Floating hearts
+const heartsContainer = document.getElementById('hearts');
+const symbols = ['♥','❤','💕','🌹','✿','♡'];
+for (let i = 0; i < 20; i++) {
+  const h = document.createElement('span');
+  h.className = 'fheart';
+  h.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+  h.style.left = Math.random() * 100 + 'vw';
+  h.style.animationDuration = (8 + Math.random() * 12) + 's';
+  h.style.animationDelay = (Math.random() * 10) + 's';
+  h.style.fontSize = (0.7 + Math.random() * 1.2) + 'rem';
+  heartsContainer.appendChild(h);
+}
+
+// Nav scroll
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// Intersection observer for reveals + counters + bars
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      // Counter animation
+      entry.target.querySelectorAll('.counter').forEach(el => {
+        animateCounter(el);
+      });
+      // Hour bars
+      if (entry.target.id === 'hourBars' || entry.target.contains(document.getElementById('hourBars'))) {
+        triggerBars();
+      }
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal, .tl-entry').forEach(el => observer.observe(el));
+
+// Also observe parent sections for bars
+const hourSection = document.querySelector('.hour-bars');
+if (hourSection) observer.observe(hourSection);
+
+function triggerBars() {
+  document.querySelectorAll('.h-fill').forEach(el => {
+    const w = el.getAttribute('data-w');
+    if (w) el.style.width = w + '%';
+  });
+}
+
+function animateCounter(el) {
+  const target = parseInt(el.getAttribute('data-target'));
+  if (!target || el.dataset.animated) return;
+  el.dataset.animated = 'true';
+  const duration = 1800;
+  const start = performance.now();
+  function update(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(eased * target).toLocaleString('es-CO');
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+// Chart
+const months = ['May 23','Jun 23','Jul 23','Ago 23','Sep 23','Oct 23','Nov 23','Dic 23','Ene 24','Feb 24','Mar 24','Abr 24','May 24','Jun 24','Jul 24','Ago 24','Sep 24','Oct 24','Nov 24','Dic 24','Ene 25','Feb 25','Mar 25','Abr 25','May 25','Jun 25','Jul 25','Ago 25','Sep 25','Oct 25','Nov 25','Dic 25','Ene 26','Feb 26','Mar 26','Abr 26','May 26'];
+const vals = [262,779,451,560,535,447,539,536,451,416,563,461,393,774,541,618,764,575,606,362,696,555,623,588,914,611,754,1120,866,843,887,664,639,500,735,442,418];
+const colors = vals.map(v => v === 1120 ? '#993556' : v >= 800 ? '#d4537e' : '#e8a0b8');
+
+new Chart(document.getElementById('actChart'), {
+  type: 'bar',
+  data: {
+    labels: months,
+    datasets: [{
+      label: 'Mensajes',
+      data: vals,
+      backgroundColor: colors,
+      borderRadius: 4,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 1200, easing: 'easeOutQuart' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ' ' + ctx.parsed.y.toLocaleString('es-CO') + ' mensajes',
+          title: ctx => ctx[0].label + (ctx[0].parsed.y === 1120 ? ' ★ Récord' : '')
+        },
+        backgroundColor: '#1a1410',
+        titleColor: '#d4537e',
+        bodyColor: 'rgba(255,255,255,0.7)',
+        padding: 12,
+        cornerRadius: 8
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#c4b8b0', font: { size: 10 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 20 },
+        grid: { display: false }
+      },
+      y: {
+        ticks: { color: '#c4b8b0', font: { size: 11 } },
+        grid: { color: 'rgba(196,184,176,0.15)' }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
