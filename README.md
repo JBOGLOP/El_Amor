@@ -1,6 +1,6 @@
 # 💌 El Amor — Jorge & Alexa
 
-**[Ver la historia →](https://jboglop.github.io/El_Amor/)**
+**[Ver la historia →](https://jboglop.github.io/El_Amor/jorge_alexa_amor.html)**
 
 ---
 
